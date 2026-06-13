@@ -6,7 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
-let latestData: any = null;
+let latestData: SyncData | null = null;
 
 interface DeckStat {
   deck_id: number | string;
@@ -50,8 +50,16 @@ app.post("/sync", async (req, res) => {
   res.json({ ok: true });
 });
 
-app.get("/latest", (_req, res) => {
-  res.json(latestData ?? { message: "No data received yet" });
+app.get("/latest", async (_req, res) => {
+  const latestSnapshot = await prisma.syncSnapshot.findFirst({
+    orderBy: { timestamp: "desc" },
+    include: { decks: true },
+  });
+  res.json(latestSnapshot ?? { message: "No data received yet" });
+});
+
+app.get("/summary", async (_req, res) => {
+  res.json({ message: "Summary endpoint not implemented yet" });
 });
 
 app.listen(PORT, () => {
