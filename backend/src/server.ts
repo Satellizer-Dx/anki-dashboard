@@ -55,7 +55,20 @@ app.get("/latest", async (_req, res) => {
     orderBy: { timestamp: "desc" },
     include: { decks: true },
   });
-  res.json(latestSnapshot ?? { message: "No data received yet" });
+
+  if (!latestSnapshot) {
+    return res.json({ message: "No snapshots found" });
+  }
+
+  const response = {
+    ...latestSnapshot,
+    decks: latestSnapshot.decks.map((deck) => ({
+      ...deck,
+      deckId: deck.deckId.toString(),
+    })),
+  };
+
+  res.json(response);
 });
 
 app.get("/summary", async (_req, res) => {
